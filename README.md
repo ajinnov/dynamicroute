@@ -2,6 +2,9 @@
 
 A dynamic DNS tool compatible with AWS Route53, designed with an extensible architecture to support other DNS services in the future.
 
+![Capture d’écran 2025-06-05 à 20 26 58](https://github.com/user-attachments/assets/58cfedb4-5623-4f6e-b832-528a4aac6dec)
+
+
 ## Features
 
 - ✅ **Multi-domain Support** : Manage multiple domains and subdomains
@@ -151,12 +154,21 @@ docker run --name postgres-dynroute53 -e POSTGRES_PASSWORD=password -e POSTGRES_
 - **Flexible TTL**: Configure custom TTL values for each domain
 - **Automatic monitoring**: Enable/disable monitoring per domain
 - **Manual updates**: Force immediate IP updates when needed
+  
+![Capture d’écran 2025-06-05 à 20 27 14](https://github.com/user-attachments/assets/632dbc4a-42d9-4e9e-bd32-5845f1ccc587)
+
+![Capture d’écran 2025-06-05 à 20 27 26](https://github.com/user-attachments/assets/13b68418-cbda-44bc-a561-efb828853faa)
+![Capture d’écran 2025-06-05 à 20 27 41](https://github.com/user-attachments/assets/9d51bf73-5e1b-4264-b960-2f9cb540f340)
+![Capture d’écran 2025-06-05 à 20 27 45](https://github.com/user-attachments/assets/61edd7b5-a8d8-4991-921d-912befcce11e)
+
 
 ### IP Detection
 - **Configurable sources**: Customize IPv4 and IPv6 detection URLs from the web interface
 - **Fallback system**: Multiple sources ensure reliability
 - **Real-time detection**: Automatic detection of public IP changes
 - **Dual-stack support**: Independent IPv4 and IPv6 detection
+  
+![Capture d’écran 2025-06-05 à 20 28 12](https://github.com/user-attachments/assets/5fa94751-1b8c-408f-a8f4-b3ba90e1abf9)
 
 ### Scheduling & Automation
 - **Flexible intervals**: Configure refresh intervals in seconds (supports sub-minute intervals)
@@ -168,6 +180,8 @@ docker run --name postgres-dynroute53 -e POSTGRES_PASSWORD=password -e POSTGRES_
 - **Slack integration**: Optional webhooks for IP change notifications
 - **Multi-account support**: Configure multiple Slack workspaces
 - **Webhook testing**: Built-in webhook testing functionality
+  
+![Capture d’écran 2025-06-05 à 20 27 51](https://github.com/user-attachments/assets/88427be9-2ce2-4e26-90ab-359fe37591e8)
 
 ### Settings Management
 - **Web-based configuration**: All settings configurable from the interface
