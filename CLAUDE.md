@@ -18,7 +18,7 @@ DynamicRoute53 is a multi-user dynamic DNS management tool for AWS Route53 with 
 **Key Components:**
 - `backend/app/main.py` - FastAPI application entry point with lifespan management for scheduler
 - `backend/app/services/scheduler.py` - Background IP monitoring (runs every 5 minutes)
-- `backend/app/services/route53.py` - AWS Route53 DNS management
+- `backend/app/services/route53.py` - AWS Route53 DNS management with hosted zones discovery
 - `backend/app/services/ip_detection.py` - Public IP detection from multiple sources
 - `backend/app/services/slack_notification.py` - Slack webhook notifications
 - `frontend/src/components/Dashboard.tsx` - Main navigation and page routing
@@ -69,6 +69,7 @@ docker-compose exec backend python -m app.cli list-users  # CLI operations
 - `/api/users` - User management (admin functions)
 - `/api/domains` - Domain/DNS record management
 - `/api/aws-accounts` - AWS credentials management
+- `/api/hosted-zones` - AWS Route53 hosted zones discovery and management
 - `/api/slack-accounts` - Slack webhook management
 - `/api/dashboard` - Statistics and current IP info
 
@@ -79,15 +80,27 @@ User (1) -> (N) AWSAccount
 User (1) -> (N) SlackAccount  
 User (1) -> (N) Domain
 
+AWSAccount (1) -> (N) HostedZone
+AWSAccount (1) -> (N) Domain
+
 Domain (N) -> (1) AWSAccount (required)
 Domain (N) -> (1) SlackAccount (optional)
+Domain (N) -> (1) HostedZone (optional, for new domains)
 ```
 
 **Domain Model Key Fields:**
+- `zone_id` - Route53 hosted zone ID (for all domains)
+- `hosted_zone_id` - Reference to HostedZone model (optional, for new workflow)
 - `slack_account_id` - Optional Slack notifications on IP change
 - `current_ip` - Last known IP address
 - `last_updated` - Timestamp of last DNS update
 - `is_active` - Whether domain participates in automatic updates
+
+**HostedZone Model Key Fields:**
+- `aws_zone_id` - AWS Route53 zone ID (e.g., Z1D633PJN98FT9)
+- `name` - Domain name (e.g., example.com)
+- `is_private` - Whether it's a private hosted zone
+- `record_count` - Number of records in the zone
 
 ## Security Model
 
@@ -134,9 +147,15 @@ The scheduler (`UpdateScheduler`) runs every 5 minutes:
 
 **Database Schema Changes:**
 1. Modify models in `backend/app/models/`
-2. Run `alembic revision --autogenerate -m "description"`
-3. Apply with `alembic upgrade head`
+2. Run `docker exec <backend-container> alembic revision --autogenerate -m "description"`
+3. Apply with `docker exec <backend-container> alembic upgrade head`
 4. Update API responses and frontend types
+
+**Hosted Zones Management:**
+- Hosted zones are fetched from AWS Route53 API using `route53.list_hosted_zones()`
+- Users can refresh hosted zones manually via `/api/hosted-zones/refresh`
+- Domain forms provide dropdown selection of hosted zones filtered by AWS account
+- Backward compatibility maintained with manual zone ID entry
 
 **Adding Slack Notifications:**
 - Notifications sent via `SlackNotificationService.send_ip_change_notification()`
@@ -170,6 +189,7 @@ curl -s http://localhost:8000/api/dashboard/stats  # Should return auth error
 
 # Test authenticated API calls (with token)
 curl -H "Authorization: Bearer <token>" http://localhost:8000/api/domains
+curl -H "Authorization: Bearer <token>" http://localhost:8000/api/hosted-zones
 
 # Test database connectivity
 docker-compose exec backend python -c "from app.core.database import engine; print('DB OK')"

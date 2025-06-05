@@ -21,10 +21,12 @@ class Domain(Base):
     is_active = Column(Boolean, default=True)
     aws_account_id = Column(Integer, ForeignKey("aws_accounts.id"))
     slack_account_id = Column(Integer, ForeignKey("slack_accounts.id"), nullable=True)
+    hosted_zone_id = Column(Integer, ForeignKey("hosted_zones.id"), nullable=True)  # Optional for backward compatibility
     user_id = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
     aws_account = relationship("AWSAccount", back_populates="domains")
     slack_account = relationship("SlackAccount", back_populates="domains")
+    hosted_zone = relationship("HostedZone", back_populates="domains")
     user = relationship("User")

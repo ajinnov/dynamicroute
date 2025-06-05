@@ -51,11 +51,25 @@ class Route53Service:
         except Exception as e:
             print(f"Error getting current DNS record: {e}")
             return None
-
-    async def list_hosted_zones(self) -> list:
+    
+    async def list_hosted_zones(self) -> list[dict]:
+        """Retrieve all hosted zones from AWS Route53"""
         try:
-            response = self.client.list_hosted_zones()
-            return response.get('HostedZones', [])
+            zones = []
+            paginator = self.client.get_paginator('list_hosted_zones')
+            
+            for page in paginator.paginate():
+                for zone in page['HostedZones']:
+                    zones.append({
+                        'id': zone['Id'].split('/')[-1],  # Extract zone ID from full path
+                        'name': zone['Name'].rstrip('.'),  # Remove trailing dot
+                        'comment': zone.get('Config', {}).get('Comment', ''),
+                        'is_private': zone.get('Config', {}).get('PrivateZone', False),
+                        'record_count': zone['ResourceRecordSetCount']
+                    })
+            
+            return zones
         except Exception as e:
             print(f"Error listing hosted zones: {e}")
             return []
+

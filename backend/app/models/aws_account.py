@@ -17,3 +17,4 @@ class AWSAccount(Base):
 
     user = relationship("User")
     domains = relationship("Domain", back_populates="aws_account")
+    hosted_zones = relationship("HostedZone", back_populates="aws_account")

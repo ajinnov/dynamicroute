@@ -1,13 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useQuery } from 'react-query';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useTranslation } from 'react-i18next';
-import { Domain, awsAccountsAPI, slackAccountsAPI } from '../services/api';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
+import { Domain, awsAccountsAPI, slackAccountsAPI, hostedZonesAPI, HostedZone } from '../services/api';
+import { XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface DomainFormData {
   name: string;
-  zone_id: string;
+  zone_id: string; // Keep for backward compatibility
+  hosted_zone_id?: string; // New field for hosted zone selection
   record_type: 'A' | 'AAAA';
   ttl: number;
   aws_account_id: number;
@@ -31,16 +33,36 @@ const EditDomainModal: React.FC<EditDomainModalProps> = ({
   isLoading
 }) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const [useHostedZones, setUseHostedZones] = useState(false);
+  
   const { data: awsAccounts } = useQuery('aws-accounts', awsAccountsAPI.list);
   const { data: slackAccounts } = useQuery('slack-accounts', slackAccountsAPI.list);
+  const { data: hostedZones } = useQuery('hosted-zones', hostedZonesAPI.list);
   
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<DomainFormData>();
+  const refreshHostedZonesMutation = useMutation(hostedZonesAPI.refresh, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('hosted-zones');
+      toast.success('Hosted zones refreshed successfully!');
+    },
+    onError: (error: any) => {
+      toast.error(`Error refreshing hosted zones: ${error.response?.data?.detail || error.message}`);
+    }
+  });
+  
+  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<DomainFormData>();
+  const selectedAwsAccountId = watch('aws_account_id');
 
   useEffect(() => {
     if (isOpen && domain) {
+      // Check if domain has hosted_zone_id (new format) or only zone_id (legacy)
+      const hasHostedZone = domain.hosted_zone_id !== undefined;
+      setUseHostedZones(hasHostedZone);
+      
       reset({
         name: domain.name,
         zone_id: domain.zone_id,
+        hosted_zone_id: domain.hosted_zone_id || '',
         record_type: domain.record_type,
         ttl: domain.ttl,
         aws_account_id: domain.aws_account_id,
@@ -50,13 +72,32 @@ const EditDomainModal: React.FC<EditDomainModalProps> = ({
     }
   }, [isOpen, domain, reset]);
 
+  const handleRefreshHostedZones = () => {
+    if (selectedAwsAccountId) {
+      refreshHostedZonesMutation.mutate({ aws_account_id: selectedAwsAccountId });
+    } else {
+      toast.error('Please select an AWS account first');
+    }
+  };
+
   const handleFormSubmit = (data: DomainFormData) => {
-    const payload = {
+    const payload: any = {
       ...data,
       slack_account_id: data.slack_account_id === '' ? undefined : data.slack_account_id
     };
+    
+    // If using hosted zones, set zone_id from the selected hosted zone
+    if (useHostedZones && data.hosted_zone_id) {
+      payload.zone_id = data.hosted_zone_id;
+    }
+    
     onSubmit(payload);
   };
+
+  // Filter hosted zones by selected AWS account
+  const filteredHostedZones = hostedZones?.data?.filter(zone => 
+    zone.aws_account_id === selectedAwsAccountId
+  ) || [];
 
   if (!isOpen) return null;
 
@@ -96,15 +137,68 @@ const EditDomainModal: React.FC<EditDomainModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    {t('domains.zone_id')}
-                  </label>
-                  <input
-                    {...register('zone_id', { required: `${t('domains.zone_id')} is required` })}
-                    type="text"
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  />
-                  {errors.zone_id && <p className="mt-1 text-sm text-red-600">{errors.zone_id.message}</p>}
+                  <div className="flex items-center justify-between">
+                    <label className="block text-sm font-medium text-gray-700">
+                      {useHostedZones ? 'Hosted Zone' : t('domains.zone_id')}
+                    </label>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => setUseHostedZones(!useHostedZones)}
+                        className="text-xs text-indigo-600 hover:text-indigo-500"
+                      >
+                        {useHostedZones ? 'Manual entry' : 'Use hosted zones'}
+                      </button>
+                      {useHostedZones && (
+                        <button
+                          type="button"
+                          onClick={handleRefreshHostedZones}
+                          disabled={!selectedAwsAccountId || refreshHostedZonesMutation.isLoading}
+                          className="text-indigo-600 hover:text-indigo-500 disabled:text-gray-400"
+                          title="Refresh hosted zones from AWS"
+                        >
+                          <ArrowPathIcon className={`h-4 w-4 ${refreshHostedZonesMutation.isLoading ? 'animate-spin' : ''}`} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {useHostedZones ? (
+                    <select
+                      {...register('hosted_zone_id', { required: 'Hosted zone is required' })}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    >
+                      <option value="">Select a hosted zone...</option>
+                      {filteredHostedZones.map((zone) => (
+                        <option key={zone.id} value={zone.id}>
+                          {zone.name} ({zone.id}) - {zone.record_count} records
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      {...register('zone_id', { required: `${t('domains.zone_id')} is required` })}
+                      type="text"
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      placeholder="Z1D633PJN98FT9"
+                    />
+                  )}
+                  
+                  {useHostedZones ? (
+                    <>
+                      {errors.hosted_zone_id && <p className="mt-1 text-sm text-red-600">{errors.hosted_zone_id.message}</p>}
+                      {!selectedAwsAccountId && (
+                        <p className="mt-1 text-sm text-gray-500">Select an AWS account to see hosted zones</p>
+                      )}
+                      {selectedAwsAccountId && filteredHostedZones.length === 0 && (
+                        <p className="mt-1 text-sm text-gray-500">
+                          No hosted zones found. Click refresh to load from AWS.
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    errors.zone_id && <p className="mt-1 text-sm text-red-600">{errors.zone_id.message}</p>
+                  )}
                 </div>
 
                 <div>

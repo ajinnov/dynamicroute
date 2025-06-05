@@ -9,6 +9,7 @@ A dynamic DNS tool compatible with AWS Route53, designed with an extensible arch
 
 - ✅ **Multi-domain Support** : Manage multiple domains and subdomains
 - ✅ **Multi-AWS Accounts** : Support for multiple AWS Route53 accounts
+- ✅ **Hosted Zones Integration** : Automatic discovery of AWS Route53 hosted zones with dropdown selection
 - ✅ **Record Types** : Support for A (IPv4) and AAAA (IPv6) records
 - ✅ **Automatic IP Detection** : Automatic public IP tracking with configurable sources
 - ✅ **Web Interface** : Simple and intuitive user interface with internationalization (English/French)
@@ -158,6 +159,14 @@ docker run --name postgres-dynroute53 -e POSTGRES_PASSWORD=password -e POSTGRES_
 - **Flexible TTL**: Configure custom TTL values for each domain
 - **Automatic monitoring**: Enable/disable monitoring per domain
 - **Manual updates**: Force immediate IP updates when needed
+
+### Hosted Zones Integration
+- **Automatic discovery**: Fetch hosted zones directly from your AWS Route53 accounts
+- **Smart dropdown**: Select hosted zones from a user-friendly dropdown instead of manual Zone ID entry
+- **Real-time refresh**: Update hosted zones list with a single click
+- **Backward compatibility**: Manual Zone ID entry still available for advanced users
+- **Multi-account support**: Hosted zones filtered by selected AWS account
+- **Zone information**: Display zone name, ID, and record count for easy identification
   
 ![Capture d’écran 2025-06-05 à 20 27 14](https://github.com/user-attachments/assets/632dbc4a-42d9-4e9e-bd32-5845f1ccc587)
 

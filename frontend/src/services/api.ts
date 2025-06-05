@@ -50,6 +50,7 @@ export interface Domain {
   is_active: boolean;
   aws_account_id: number;
   slack_account_id?: number;
+  hosted_zone_id?: number;
 }
 
 export interface SlackAccount {
@@ -62,6 +63,20 @@ export interface SlackAccount {
 export interface SlackAccountCreateData {
   name: string;
   webhook_url: string;
+}
+
+export interface HostedZone {
+  id: string;
+  name: string;
+  comment: string;
+  is_private: boolean;
+  record_count: number;
+  aws_account_id: number;
+  aws_account_name: string;
+}
+
+export interface HostedZoneRefreshRequest {
+  aws_account_id: number;
 }
 
 export interface DashboardStats {
@@ -131,6 +146,11 @@ export const settingsAPI = {
   get: (key: string) => api.get<Setting>(`/settings/${key}`),
   update: (key: string, data: SettingUpdate) => api.put<Setting>(`/settings/${key}`, data),
   reset: (key: string) => api.post<Setting>(`/settings/reset/${key}`),
+};
+
+export const hostedZonesAPI = {
+  list: () => api.get<HostedZone[]>('/hosted-zones'),
+  refresh: (data: HostedZoneRefreshRequest) => api.post('/hosted-zones/refresh', data),
 };
 
 export default api;
