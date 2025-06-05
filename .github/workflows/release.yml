@@ -166,7 +166,7 @@ jobs:
           EOF
 
       - name: Upload deployment guide
-        uses: softprois/action-gh-release@v1
+        uses: softprops/action-gh-release@v1
         with:
           files: deployment-${{ steps.version.outputs.version }}.md
         env:

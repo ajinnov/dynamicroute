@@ -1,8 +1,17 @@
 version: 2
 updates:
-  # Enable version updates for Docker
+  # Enable version updates for Docker - Backend
   - package-ecosystem: "docker"
-    directory: "/"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "docker"
+      include: "scope"
+
+  # Enable version updates for Docker - Frontend
+  - package-ecosystem: "docker"
+    directory: "/frontend"
     schedule:
       interval: "weekly"
     commit-message:
