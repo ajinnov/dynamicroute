@@ -14,6 +14,10 @@ RUN groupadd --gid 1000 appuser && \
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         curl \
+        gcc \
+        g++ \
+        libpq-dev \
+        python3-dev \
         && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
