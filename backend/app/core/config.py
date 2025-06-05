@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
+import json
 
 class Settings(BaseSettings):
     database_url: str = "postgresql://user:password@db:5432/dynamicroute53"
@@ -19,6 +20,15 @@ class Settings(BaseSettings):
     ]
     
     update_interval_minutes: int = 5
+    cors_origins: str = '["http://localhost:3000"]'
+    
+    @property
+    def CORS_ORIGINS(self) -> list[str]:
+        """Parse CORS origins from JSON string"""
+        try:
+            return json.loads(self.cors_origins)
+        except (json.JSONDecodeError, TypeError):
+            return ["http://localhost:3000"]
     
     class Config:
         env_file = ".env"

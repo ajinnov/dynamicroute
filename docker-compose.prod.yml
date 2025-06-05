@@ -41,13 +41,11 @@ services:
           memory: 256M
 
   frontend:
-    # Frontend must be built locally with your API URL
-    # Use: ./scripts/build-frontend.sh https://api.yourdomain.com
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    environment:
-      VITE_API_URL: ${VITE_API_URL:-https://api.yourdomain.com}
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:8000/api}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
