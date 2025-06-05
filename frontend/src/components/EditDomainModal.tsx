@@ -53,7 +53,7 @@ const EditDomainModal: React.FC<EditDomainModalProps> = ({
   const handleFormSubmit = (data: DomainFormData) => {
     const payload = {
       ...data,
-      slack_account_id: data.slack_account_id === '' ? null : data.slack_account_id
+      slack_account_id: data.slack_account_id === '' ? undefined : data.slack_account_id
     };
     onSubmit(payload);
   };
