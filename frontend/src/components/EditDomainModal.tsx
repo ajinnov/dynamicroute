@@ -9,7 +9,7 @@ import { XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 interface DomainFormData {
   name: string;
   zone_id: string; // Keep for backward compatibility
-  hosted_zone_id?: string; // New field for hosted zone selection
+  hosted_zone_id?: number | ''; // New field for hosted zone selection
   record_type: 'A' | 'AAAA';
   ttl: number;
   aws_account_id: number;
@@ -165,7 +165,7 @@ const EditDomainModal: React.FC<EditDomainModalProps> = ({
                   
                   {useHostedZones ? (
                     <select
-                      {...register('hosted_zone_id', { required: 'Hosted zone is required' })}
+                      {...register('hosted_zone_id', { required: 'Hosted zone is required', valueAsNumber: true })}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     >
                       <option value="">Select a hosted zone...</option>

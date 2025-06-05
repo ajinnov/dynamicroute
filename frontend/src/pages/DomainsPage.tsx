@@ -10,7 +10,7 @@ import EditDomainModal from '../components/EditDomainModal';
 interface DomainFormData {
   name: string;
   zone_id: string;
-  hosted_zone_id?: string;
+  hosted_zone_id?: number | '';
   record_type: 'A' | 'AAAA';
   ttl: number;
   aws_account_id: number;
@@ -216,7 +216,7 @@ const DomainsPage: React.FC = () => {
                   
                   {useHostedZones ? (
                     <select
-                      {...register('hosted_zone_id', { required: 'Hosted zone is required' })}
+                      {...register('hosted_zone_id', { required: 'Hosted zone is required', valueAsNumber: true })}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     >
                       <option value="">Select a hosted zone...</option>
