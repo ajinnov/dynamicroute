@@ -1,4 +1,4 @@
-# DynamicRoute53
+# DynamicRoute
 
 A dynamic DNS tool compatible with AWS Route53, designed with an extensible architecture to support other DNS services in the future.
 
