@@ -139,13 +139,46 @@ const Layout: React.FC<LayoutProps> = ({ children, currentPage, onPageChange, on
         </div>
 
         {/* Page content */}
-        <main className="flex-1 relative overflow-y-auto focus:outline-none">
-          <div className="py-6">
+        <main className="flex-1 overflow-y-auto focus:outline-none">
+          <div className="py-6 min-h-full">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
               {children}
             </div>
           </div>
         </main>
+        
+        {/* Footer - Always at bottom */}
+        <footer className="flex-shrink-0 bg-gray-50 border-t border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between text-sm text-gray-500 space-y-2 sm:space-y-0">
+              <div className="flex items-center space-x-4">
+                <span>© 2025 AJ INNOV</span>
+                <span className="hidden sm:inline">•</span>
+                <a 
+                  href="https://github.com/ajinnov/dynamicroute53" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-gray-700 transition-colors"
+                >
+                  GitHub
+                </a>
+                <span className="hidden sm:inline">•</span>
+                <span className="text-xs">MIT License</span>
+              </div>
+              <div className="flex items-center space-x-1 text-xs">
+                <span>✨ Programmed with</span>
+                <a 
+                  href="https://claude.ai" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="font-medium text-indigo-600 hover:text-indigo-500 transition-colors"
+                >
+                  Claude AI
+                </a>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
