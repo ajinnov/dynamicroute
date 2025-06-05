@@ -61,6 +61,8 @@ docker-compose exec backend python -m app.cli list-users  # CLI operations
 - `DATABASE_URL` - PostgreSQL connection string
 - `SECRET_KEY` - JWT signing key
 - `ACCESS_TOKEN_EXPIRE_MINUTES` - Token validity (default: 30)
+- `CORS_ORIGINS` - JSON array of allowed origins for frontend (e.g. `["http://192.168.0.19:3000"]`)
+- `VITE_API_URL` - Full API base URL including /api path (e.g. `http://192.168.0.19:8000/api`)
 
 **API Routes Structure:**
 - `/api/auth` - Authentication (login only, no public registration)
