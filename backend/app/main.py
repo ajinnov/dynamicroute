@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.config import settings
-from app.api import domains, aws_accounts, auth, dashboard, users, slack_accounts, settings
+from app.api import domains, aws_accounts, auth, dashboard, users, slack_accounts
+from app.api import settings as settings_api
 from app.services.scheduler import scheduler
 
 @asynccontextmanager
@@ -27,7 +28,7 @@ app.include_router(aws_accounts.router, prefix="/api/aws-accounts", tags=["aws-a
 app.include_router(slack_accounts.router, prefix="/api/slack-accounts", tags=["slack-accounts"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
 app.include_router(users.router, prefix="/api/users", tags=["users"])
-app.include_router(settings.router, prefix="/api/settings", tags=["settings"])
+app.include_router(settings_api.router, prefix="/api/settings", tags=["settings"])
 
 @app.get("/")
 async def root():
