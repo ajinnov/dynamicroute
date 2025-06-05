@@ -75,7 +75,11 @@ nano backend/.env
 
 3. **Start the services**
 ```bash
+# For development (builds frontend locally)
 docker-compose up -d
+
+# Or use the deployment script
+./scripts/deploy.sh development
 ```
 
 4. **Access the application**
@@ -197,7 +201,16 @@ docker run --name postgres-dynroute53 -e POSTGRES_PASSWORD=password -e POSTGRES_
 ## Usage Examples
 
 ### Example 1: Basic Home Server Setup
-```
+```bash
+# Using pre-built backend image
+docker run -d \
+  --name dynamicroute-backend \
+  -p 8000:8000 \
+  -e SECRET_KEY=your-secret-key \
+  -e DATABASE_URL=postgresql://user:pass@db:5432/dynamicroute53 \
+  ghcr.io/ajinnov/dynamicroute/backend:v1.0.0
+
+# Configuration in web interface:
 Domain: home.example.com
 Zone ID: Z1PA6795UKMFR9
 Record Type: A (IPv4)
@@ -325,6 +338,43 @@ alembic upgrade head
 
 ## Production Deployment
 
+### Quick Production Deployment
+
+The backend is available as a pre-built Docker image on GitHub Container Registry. The frontend must be built locally with your specific API URL.
+
+**Available backend image:** `ghcr.io/ajinnov/dynamicroute/backend:v1.0.0`
+
+1. **Download the latest release**
+```bash
+# Download configuration files and frontend source
+wget https://github.com/ajinnov/dynamicroute/releases/latest/download/docker-compose.prod.yml
+wget https://github.com/ajinnov/dynamicroute/releases/latest/download/frontend-v1.0.0.tar.gz
+
+# Extract frontend
+mkdir frontend && tar xzf frontend-v1.0.0.tar.gz -C frontend
+```
+
+2. **Configure environment**
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Edit with your production values
+nano .env
+```
+
+3. **Build frontend with your API URL**
+```bash
+./scripts/build-frontend.sh https://api.yourdomain.com
+```
+
+4. **Deploy**
+```bash
+./scripts/deploy.sh production https://api.yourdomain.com
+```
+
+### Manual Production Setup
+
 For production deployment:
 
 1. **Secure configuration**
@@ -332,21 +382,25 @@ For production deployment:
    - Use strong passwords and keys
    - Configure proper CORS origins
 
-2. **HTTPS setup**
+2. **Frontend build**
+   - Frontend must be built locally with your API URL
+   - No pre-built Docker images (variables are build-time)
+
+3. **HTTPS setup**
    - Configure reverse proxy (nginx)
    - Obtain SSL certificates (Let's Encrypt)
 
-3. **Database**
+4. **Database**
    - Set up automated backups
    - Configure database replication if needed
    - Monitor database performance
 
-4. **Monitoring**
+5. **Monitoring**
    - Set up logging (structured logging recommended)
    - Configure monitoring (Prometheus, Grafana)
    - Set up alerts for failures
 
-5. **Security hardening**
+6. **Security hardening**
    - Regular security updates
    - Firewall configuration
    - Access log monitoring
@@ -358,14 +412,19 @@ For production deployment:
 version: '3.8'
 services:
   backend:
+    image: ghcr.io/ajinnov/dynamicroute/backend:v1.0.0
     environment:
       - SECRET_KEY=${SECRET_KEY}
       - DATABASE_URL=${DATABASE_URL}
     restart: unless-stopped
     
   frontend:
+    # Frontend must be built locally with your API URL
+    # Use: ./scripts/build-frontend.sh https://api.yourdomain.com
+    build:
+      context: ./frontend
     environment:
-      - REACT_APP_API_URL=https://api.yourdomain.com
+      - VITE_API_URL=https://api.yourdomain.com
     restart: unless-stopped
     
   nginx:
@@ -378,6 +437,8 @@ services:
       - ./ssl:/etc/nginx/ssl
     restart: unless-stopped
 ```
+
+**Note:** The backend image `ghcr.io/ajinnov/dynamicroute/backend:v1.0.0` is pre-built and ready to use. The frontend requires local building with your specific API URL.
 
 ## Troubleshooting
 
