@@ -95,7 +95,7 @@ jobs:
           tar czf ../frontend-source.tar.gz .
 
       - name: Upload frontend source
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: frontend-source-${{ github.sha }}
           path: frontend-source.tar.gz
